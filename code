@@ -1,0 +1,41 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Parameters
+BLOCK_SIZE = 16
+THRESHOLD = 30  # adjust this for stricter or looser detection
+
+# Load two frames
+frame1 = cv2.imread('frame1.jpg')
+frame2 = cv2.imread('frame2.jpg')
+
+# Resize to same size (optional, for safety)
+frame1 = cv2.resize(frame1, (640, 480))
+frame2 = cv2.resize(frame2, (640, 480))
+
+# Initialize output image
+replenished = np.copy(frame1)
+
+# Dimensions
+h, w, _ = frame1.shape
+
+# Loop over blocks
+for y in range(0, h, BLOCK_SIZE):
+    for x in range(0, w, BLOCK_SIZE):
+        block1 = frame1[y:y+BLOCK_SIZE, x:x+BLOCK_SIZE]
+        block2 = frame2[y:y+BLOCK_SIZE, x:x+BLOCK_SIZE]
+
+        # Compute absolute difference
+        diff = np.abs(block1.astype(int) - block2.astype(int)).mean()
+
+        if diff > THRESHOLD:
+            # Block changed → update with new data
+            replenished[y:y+BLOCK_SIZE, x:x+BLOCK_SIZE] = block2
+        # else → keep old block (already copied from frame1)
+
+# Save and visualize result
+cv2.imwrite('replenished_output.jpg', replenished)
+cv2.imshow('Replenished Frame', replenished)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
